@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>어떻게 하면 잘 녹지?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Gothic+A1:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#EAF3FB; --sky2:#DCEBF8;
+    --ink:#1E3A5F; --ink-soft:#4A6480;
+    --water:#2E9BC9; --water-d:#1F7BA3;
+    --go:#3FB27F; --go-d:#2E9366;
+    --coral:#F0806B; --coral-d:#D9604A;
+    --warm:#F4998A; --cool:#7FCBE8;
+    --sugar:#F6B84A; --tea:#B07A4A;
+    --card:#FFFFFF; --line:#CFE0F0;
+    --shadow-sm:0 3px 0 rgba(30,58,95,.10);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:'Gothic A1',system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 12% -10%, #F4FAFF 0%, transparent 60%),
+      radial-gradient(1000px 700px at 110% 120%, #E2F0FA 0%, transparent 55%),
+      var(--sky);
+    color:var(--ink); overflow:hidden;
+  }
+  .jua{font-family:'Jua',system-ui,sans-serif; font-weight:400}
+
+  /* ---------- Layout ---------- */
+  .stage{height:100vh; display:grid; grid-template-columns:1fr 340px;}
+  .main{position:relative; height:100vh; display:flex; flex-direction:column; padding:18px 26px 0;}
+  .topbar{display:flex; align-items:center; gap:14px; padding:6px 2px 12px}
+  .logo{display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; color:var(--ink)}
+  .logo svg{width:34px;height:34px}
+  .progress{display:flex; gap:9px; margin-left:auto}
+  .dot{width:34px;height:12px;border-radius:20px;background:var(--sky2); transition:.35s}
+  .dot.done{background:var(--go)}
+  .dot.active{background:var(--water); width:56px}
+  .steplabel{font-size:13px;color:var(--ink-soft); font-weight:700; margin-left:12px; white-space:nowrap}
+
+  .screen{flex:1; overflow-y:auto; overflow-x:hidden; padding:6px 4px 130px; -webkit-overflow-scrolling:touch}
+  .screen::-webkit-scrollbar{width:8px} .screen::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;background:#fff;border:2px solid var(--line);
+    color:var(--water-d);font-weight:800;font-size:14px;padding:7px 15px;border-radius:30px;box-shadow:var(--shadow-sm)}
+  .eyebrow .n{background:var(--water);color:#fff;min-width:24px;height:24px;border-radius:12px;padding:0 7px;
+    display:grid;place-items:center;font-family:'Jua';font-size:14px}
+  h1.q{font-family:'Jua'; font-weight:400; font-size:32px; line-height:1.32; margin:16px 0 6px; letter-spacing:-.5px}
+  .sub{font-size:16px;color:var(--ink-soft); margin:0 0 18px; font-weight:500; line-height:1.55}
+  .hl{color:var(--water-d)} .hl-go{color:var(--go-d)} .hl-coral{color:var(--coral-d)}
+
+  /* ---------- Cards / choices ---------- */
+  .cards{display:flex; gap:16px; flex-wrap:wrap}
+  .choice{
+    background:var(--card); border:3px solid var(--line); border-radius:22px; padding:18px 16px 16px;
+    width:180px; cursor:pointer; text-align:center; box-shadow:var(--shadow-sm); transition:.16s;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .choice:hover{transform:translateY(-3px); border-color:var(--water)}
+  .choice.sel{border-color:var(--water); background:#F1F9FE; box-shadow:0 4px 0 var(--water-d),0 12px 22px rgba(46,155,201,.28)}
+  .choice.sel.go{border-color:var(--go); background:#EEFBF4; box-shadow:0 4px 0 var(--go-d),0 12px 22px rgba(63,178,127,.26)}
+  .choice .cap{font-weight:800; font-size:17px; line-height:1.35}
+  .choice .capsub{font-size:13px;color:var(--ink-soft);font-weight:600; margin-top:-4px}
+  .choice svg{width:96px;height:72px}
+
+  /* wide question option cards */
+  .qopt{width:240px; padding:16px}
+  .qopt .cap{font-size:15.5px}
+
+  /* ---------- Buttons ---------- */
+  .footer{position:absolute; left:0; right:0; bottom:0; padding:16px 26px 20px;
+    background:linear-gradient(0deg, var(--sky) 62%, transparent); display:flex; align-items:center; gap:14px; z-index:5}
+  .btn{font-family:'Jua'; font-size:20px; border:none; border-radius:18px; padding:15px 30px; cursor:pointer;
+    transition:.14s; display:inline-flex; align-items:center; gap:9px}
+  .btn:active{transform:translateY(2px)}
+  .btn-primary{background:var(--water); color:#fff; box-shadow:0 5px 0 var(--water-d)}
+  .btn-primary:disabled{background:#B9CFE0; box-shadow:0 5px 0 #9DB6C9; cursor:not-allowed; color:#eef}
+  .btn-ghost{background:#fff; color:var(--ink-soft); box-shadow:var(--shadow-sm); font-size:17px; padding:14px 20px}
+  .btn-go{background:var(--go); color:#fff; box-shadow:0 5px 0 var(--go-d)}
+  .btn-dl{background:var(--sugar); color:#7A4E08; box-shadow:0 5px 0 #D69A2B}
+  .spacer{flex:1}
+  .hint{font-size:14px;color:var(--ink-soft);font-weight:600}
+
+  /* ---------- Start form ---------- */
+  .startform{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:10px 0 6px}
+  .field{background:#fff;border:3px solid var(--line);border-radius:16px;padding:10px 14px;display:flex;
+    flex-direction:column;gap:2px;box-shadow:var(--shadow-sm)}
+  .field label{font-size:12px;font-weight:800;color:var(--water-d)}
+  .field input,.field select{border:none;outline:none;font-family:'Jua';font-size:20px;color:var(--ink);
+    width:110px;background:transparent}
+  .field input::placeholder{color:#B7CBDD}
+  .field.name input{width:170px}
+
+  /* ---------- Sorting (condition control) ---------- */
+  .sortwrap{display:grid; grid-template-columns:1fr 270px; gap:22px; align-items:start}
+  .pool{display:flex;flex-wrap:wrap;gap:12px}
+  .chip{background:#fff;border:3px solid var(--line);border-radius:16px;padding:12px 8px 10px;width:128px;
+    text-align:center;cursor:pointer;box-shadow:var(--shadow-sm);transition:.15s;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .chip:hover{transform:translateY(-2px);border-color:var(--water)}
+  .chip svg{width:78px;height:56px}
+  .chip .t{font-weight:800;font-size:14px;line-height:1.3}
+  .bins{display:flex;flex-direction:column;gap:16px}
+  .bin{border-radius:20px;padding:14px;min-height:110px;border:3px dashed}
+  .bin.diff{border-color:var(--coral);background:rgba(240,128,107,.08)}
+  .bin.same{border-color:var(--go);background:rgba(63,178,127,.07)}
+  .bin h3{margin:0 0 4px;font-family:'Jua';font-size:19px;display:flex;align-items:center;gap:8px}
+  .bin.same h3{color:var(--go-d)} .bin.diff h3{color:var(--coral-d)}
+  .bin .desc{font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-bottom:8px}
+  .bin .slotrow{display:flex;flex-wrap:wrap;gap:7px;min-height:30px}
+  .placed{background:#fff;border:2px solid;border-radius:12px;padding:6px 10px;font-weight:800;font-size:13.5px;
+    display:inline-flex;align-items:center;gap:5px;cursor:pointer}
+  .placed.same{border-color:var(--go);color:var(--go-d)} .placed.diff{border-color:var(--coral);color:var(--coral-d)}
+  .placed.fixed{cursor:default}
+  .placed .x{opacity:.5;font-weight:800}
+
+  /* toast */
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(140px);
+    background:var(--ink);color:#fff;padding:14px 24px;border-radius:16px;font-weight:700;font-size:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.3);transition:.35s cubic-bezier(.2,1.2,.4,1);z-index:50;display:flex;gap:9px;align-items:center;max-width:80vw}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .toast.good{background:var(--go-d)} .toast.oops{background:var(--coral-d)}
+
+  /* ---------- Notebook side panel ---------- */
+  .note{background:#fff; border-left:4px solid var(--line); height:100vh; padding:24px 22px; overflow-y:auto;
+    box-shadow:-8px 0 30px rgba(30,58,95,.06)}
+  .note::-webkit-scrollbar{width:7px}.note::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  .note-h{display:flex;align-items:center;gap:10px;font-family:'Jua';font-size:20px;color:var(--ink);margin-bottom:2px}
+  .note-sub{font-size:12.5px;color:var(--ink-soft);font-weight:600;margin-bottom:14px}
+  .student{background:var(--sky);border:1.5px solid var(--line);border-radius:12px;padding:9px 12px;
+    font-weight:800;font-size:14px;margin-bottom:14px;display:none}
+  .student.show{display:block}
+  .mbadges{display:flex;gap:8px;margin-bottom:16px}
+  .mb{flex:1;text-align:center;background:var(--sky);border:2px solid var(--line);border-radius:12px;
+    padding:7px 4px;font-size:12px;font-weight:800;color:#9DB4C8}
+  .mb.now{border-color:var(--water);color:var(--water-d);background:#F1F9FE}
+  .mb.ok{border-color:var(--go);color:var(--go-d);background:#EEFBF4}
+  .nrow{margin-bottom:15px;opacity:.4;transition:.4s}
+  .nrow.on{opacity:1}
+  .nlabel{font-size:12px;font-weight:800;color:var(--water-d);letter-spacing:.3px;display:flex;align-items:center;gap:6px;margin-bottom:5px}
+  .nlabel .b{width:20px;height:20px;border-radius:6px;background:var(--sky2);color:var(--water-d);
+    display:grid;place-items:center;font-family:'Jua';font-size:12px}
+  .nrow.on .nlabel .b{background:var(--go);color:#fff}
+  .nval{background:var(--sky);border-radius:12px;padding:11px 13px;font-weight:700;font-size:14.5px;line-height:1.5;
+    min-height:22px;color:var(--ink);border:1.5px solid var(--line)}
+  .nval.empty{color:#A9BED2;font-weight:600;font-size:13px}
+  .tagline{display:inline-block;background:#EEFBF4;color:var(--go-d);border:1.5px solid var(--go);
+    border-radius:8px;padding:2px 8px;font-size:12px;font-weight:800;margin:2px 4px 2px 0}
+  .tagline.d{background:#FEF1EE;color:var(--coral-d);border-color:var(--coral)}
+
+  /* start + finish */
+  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:100%;gap:10px;padding-bottom:40px}
+  .center h1{font-family:'Jua';font-size:42px;margin:6px 0;line-height:1.25}
+  .center p{font-size:17px;color:var(--ink-soft);font-weight:600;max-width:480px;margin:0 0 4px;line-height:1.6}
+  .bigflask{width:130px;height:130px;filter:drop-shadow(0 10px 18px rgba(46,155,201,.25))}
+  .medal{width:110px;height:110px}
+  .summary{background:#fff;border:3px solid var(--line);border-radius:20px;padding:20px 24px;text-align:left;
+    max-width:580px;box-shadow:var(--shadow-sm);margin-top:4px;width:100%}
+  .summary .sl{font-size:12.5px;font-weight:800;color:var(--water-d);margin-bottom:2px}
+  .summary .sv{font-size:15.5px;font-weight:700;margin-bottom:12px;line-height:1.5}
+  .summary .sv:last-child{margin-bottom:0}
+  .praise{background:#FFF7E4;border:3px solid var(--sugar);border-radius:18px;padding:14px 22px;
+    font-family:'Jua';font-size:19px;color:#7A4E08;max-width:580px;width:100%}
+  .proc{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:620px;width:100%}
+  .proc-title{font-family:'Jua';font-size:19px;color:var(--ink);margin:8px 0 0}
+  .pstep{background:#fff;border:3px solid var(--line);border-radius:16px;padding:10px 8px 8px;width:138px;
+    text-align:center;box-shadow:var(--shadow-sm)}
+  .pstep svg{width:118px;height:78px}
+  .pn{width:24px;height:24px;line-height:21px;border:2.5px solid var(--ink);border-radius:50%;
+    margin:0 auto 5px;font-family:'Jua';font-size:14px;color:var(--ink)}
+  .pl{font-size:12.5px;font-weight:800;color:var(--ink);line-height:1.4;margin-top:3px}
+  /* 기록하기 */
+  .recsec{background:#fff;border:3px solid var(--line);border-radius:20px;padding:16px 18px;
+    margin-bottom:16px;max-width:660px;box-shadow:var(--shadow-sm)}
+  .recsec h3{margin:0 0 10px;font-family:'Jua';font-size:19px;font-weight:400;color:var(--ink)}
+  .optrow{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+  .optchip{text-align:left;background:var(--sky);border:2.5px solid var(--line);border-radius:14px;
+    padding:11px 14px;font-weight:700;font-size:15px;cursor:pointer;font-family:'Gothic A1',sans-serif;
+    color:var(--ink);transition:.13s;line-height:1.5}
+  .optchip:hover{border-color:var(--water)}
+  .optchip.sel{border-color:var(--go);background:#EEFBF4;color:var(--go-d)}
+  .recsec textarea{width:100%;border:2.5px dashed var(--line);border-radius:14px;padding:11px 14px;
+    font:600 15px 'Gothic A1',sans-serif;color:var(--ink);resize:vertical;min-height:50px;
+    background:#FBFDFF;outline:none;box-sizing:border-box}
+  .recsec textarea:focus{border-color:var(--water);border-style:solid}
+
+  @media(max-width:920px){
+    .stage{grid-template-columns:1fr; grid-template-rows:1fr auto}
+    .note{height:auto;border-left:none;border-top:4px solid var(--line);
+      display:grid;grid-template-columns:repeat(2,1fr);gap:12px 18px;padding:16px 20px}
+    .note-h,.note-sub,.student,.mbadges{grid-column:1/-1;margin-bottom:4px}
+    .nrow{margin-bottom:0}
+    .main{height:auto;min-height:62vh}
+    .sortwrap{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="logo"><span id="logo-ic"></span><span class="jua">어떻게 하면 잘 녹지?</span></div>
+      <div class="progress" id="dots"></div>
+      <span class="steplabel" id="steplabel"></span>
+    </div>
+    <div class="screen" id="screen"></div>
+    <div class="footer" id="footer"></div>
+  </div>
+
+  <!-- NOTEBOOK -->
+  <aside class="note">
+    <div class="note-h">📒 나의 탐구 계획</div>
+    <div class="note-sub">고를 때마다 여기에 채워져요</div>
+    <div class="student" id="nb-student"></div>
+    <div class="mbadges" id="nb-badges"></div>
+
+    <div class="nrow" id="nr-q">
+      <div class="nlabel"><span class="b">1</span>탐구 문제</div>
+      <div class="nval empty" id="nv-q">아직 정하지 않았어요</div>
+    </div>
+    <div class="nrow" id="nr-diff">
+      <div class="nlabel"><span class="b">2</span>다르게 할 것</div>
+      <div class="nval empty" id="nv-diff">아직 정하지 않았어요</div>
+    </div>
+    <div class="nrow" id="nr-same">
+      <div class="nlabel"><span class="b">2</span>같게 할 것</div>
+      <div class="nval empty" id="nv-same">아직 정하지 않았어요</div>
+    </div>
+    <div class="nrow" id="nr-measure">
+      <div class="nlabel"><span class="b">3</span>측정할 것</div>
+      <div class="nval empty" id="nv-measure">아직 정하지 않았어요</div>
+    </div>
+    <div class="nrow" id="nr-predict">
+      <div class="nlabel"><span class="b">4</span>나의 예상</div>
+      <div class="nval empty" id="nv-predict">아직 정하지 않았어요</div>
+    </div>
+    <div class="nrow" id="nr-result">
+      <div class="nlabel"><span class="b">5</span>실험 결과</div>
+      <div class="nval empty" id="nv-result">아직 정하지 않았어요</div>
+    </div>
+    <div class="nrow" id="nr-learned">
+      <div class="nlabel"><span class="b">6</span>알게 된 점</div>
+      <div class="nval empty" id="nv-learned">아직 정하지 않았어요</div>
+    </div>
+  </aside>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================================================================
+   ICONS — 비교형 단순 이미지 (실루엣 비커, 색·높이·횟수 비교)
+================================================================ */
+/* 비커 실루엣: y=14(입구)~58(바닥), 벽이 살짝 좁아지는 사다리꼴.
+   BEAKER(x, waterTop, fill) — waterTop이 있으면 그 높이부터 바닥까지 물을 채움 */
+const _bl=y=>2.4*(y-14)/44;                    // 벽 기울기 (한쪽)
+const BEAKER=(x,waterTop,fill)=>{
+  let water='';
+  if(waterTop){
+    const lT=x+_bl(waterTop), rT=x+30-_bl(waterTop);
+    const lB=x+_bl(56)+1.2,   rB=x+30-_bl(56)-1.2;
+    water=`<path d="M${lT.toFixed(1)} ${waterTop} L${rT.toFixed(1)} ${waterTop} L${rB.toFixed(1)} 56 Q${rB.toFixed(1)} 57.5 ${(rB-2.5).toFixed(1)} 57.5 L${(lB+2.5).toFixed(1)} 57.5 Q${lB.toFixed(1)} 57.5 ${lB.toFixed(1)} 56 Z" fill="${fill}"/>`;
+  }
+  return `${water}<path d="M${x} 14h30l-2.4 42a4 4 0 0 1-4 3.7H${x+6.4}a4 4 0 0 1-4-3.7z"
+    fill="none" stroke="#1E3A5F" stroke-width="2.4" stroke-linejoin="round"/>`;
+};
+
+const ICON = {
+  flask:`<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <path d="M16 5h8M17 5v9L8.5 30c-1.5 2.8.4 6 3.5 6h16c3.1 0 5-3.2 3.5-6L23 14V5"
+      fill="#EAF7FF" stroke="#1F7BA3" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <path d="M12.7 24h14.6l3.2 6c1.5 2.8-.4 6-3.5 6h-16c-3.1 0-5-3.2-3.5-6z" fill="#2E9BC9"/>
+    <circle cx="17" cy="30" r="1.8" fill="#EAF7FF"/><circle cx="23" cy="32" r="1.3" fill="#EAF7FF"/></svg>`,
+
+  /* --- 요인 비교 아이콘 (viewBox 0 0 120 78) --- */
+  wamount:`<svg viewBox="0 0 120 78"><g transform="translate(6,6)">
+    ${BEAKER(6,24,'#7FCBE8')} ${BEAKER(66,44,'#7FCBE8')}
+    <path d="M2 30h38M62 50h38" stroke="#1F7BA3" stroke-width="1.6" stroke-dasharray="3 3" opacity=".6"/>
+    </g></svg>`,
+
+  wtemp:`<svg viewBox="0 0 120 78"><g transform="translate(6,6)">
+    ${BEAKER(6,28,'#F4998A')} ${BEAKER(66,28,'#7FCBE8')}
+    <path d="M14 8c1.5-2.5 0-4 1.5-6M21 8c1.5-2.5 0-4 1.5-6M28 8c1.5-2.5 0-4 1.5-6"
+      stroke="#F0806B" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <path d="M96 2v8M92 4l8 4M100 4l-8 4" stroke="#2E9BC9" stroke-width="1.8" stroke-linecap="round"/>
+    </g></svg>`,
+
+  samount:`<svg viewBox="0 0 120 78"><g transform="translate(6,6)">
+    ${BEAKER(6,0,'')} ${BEAKER(66,0,'')}
+    <path d="M14 56q7-6 14 0z" fill="#F6B84A"/>
+    <path d="M70 56q11-20 22 0z" fill="#F6B84A"/>
+    </g></svg>`,
+
+  grain:`<svg viewBox="0 0 120 78">
+    <rect x="26" y="22" width="30" height="30" rx="4" fill="#FDF3DC" stroke="#E0A93F" stroke-width="2.6"/>
+    <g fill="#F6B84A"><rect x="76" y="28" width="8" height="8" rx="2"/><rect x="90" y="24" width="7" height="7" rx="2"/>
+    <rect x="84" y="40" width="7" height="7" rx="2"/><rect x="97" y="36" width="6" height="6" rx="1.6"/>
+    <rect x="76" y="46" width="6" height="6" rx="1.6"/><rect x="93" y="49" width="6" height="6" rx="1.6"/></g></svg>`,
+
+  stype:`<svg viewBox="0 0 120 78"><g transform="translate(6,6)">
+    ${BEAKER(6,28,'#FBE7C0')} ${BEAKER(66,28,'#E8D5F5')}
+    <circle cx="21" cy="46" r="2.4" fill="#E0A93F"/><circle cx="27" cy="52" r="1.8" fill="#E0A93F"/>
+    <path d="M78 44l3.4 4-3.4 4-3.4-4z" fill="#B491D6"/><path d="M89 50l2.6 3-2.6 3-2.6-3z" fill="#B491D6"/>
+    </g></svg>`,
+
+  stir:`<svg viewBox="0 0 120 78"><g transform="translate(6,4)">
+    <path d="M28 34a12 12 0 1 1-3-8" fill="none" stroke="#2E9BC9" stroke-width="3" stroke-linecap="round"/>
+    <path d="M25 22l1-5 4 4z" fill="#2E9BC9"/>
+    <text x="17" y="39" font-family="Jua" font-size="14" text-anchor="middle" fill="#1E3A5F">1</text>
+    <g transform="translate(60,0)">
+    <path d="M28 34a12 12 0 1 1-3-8" fill="none" stroke="#2E9BC9" stroke-width="3" stroke-linecap="round"/>
+    <path d="M25 22l1-5 4 4z" fill="#2E9BC9"/>
+    <path d="M26 31a7 7 0 1 1-2-4.6" fill="none" stroke="#2E9BC9" stroke-width="2.2" stroke-linecap="round" opacity=".65"/>
+    <text x="17" y="39" font-family="Jua" font-size="14" text-anchor="middle" fill="#1E3A5F">3</text></g>
+    <text x="17" y="66" font-family="Jua" font-size="12" text-anchor="middle" fill="#4A6480">1바퀴</text>
+    <text x="77" y="66" font-family="Jua" font-size="12" text-anchor="middle" fill="#4A6480">3바퀴</text>
+    </g></svg>`,
+
+  ptime:`<svg viewBox="0 0 120 78"><g transform="translate(6,0)">
+    <path d="M21 4v12M15 11l6 7 6-7" fill="none" stroke="#3FB27F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M81 4v12M75 11l6 7 6-7" fill="none" stroke="#3FB27F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <g transform="translate(0,12) scale(1,0.92)">${BEAKER(6,36,'#BFE4F4')}${BEAKER(66,36,'#BFE4F4')}</g>
+    </g></svg>`,
+
+  /* --- 측정 아이콘 --- */
+  mtime:`<svg viewBox="0 0 120 78"><circle cx="60" cy="44" r="26" fill="#EAF7FF" stroke="#1F7BA3" stroke-width="2.6"/>
+    <path d="M60 44V28M60 44l12 8" stroke="#1F7BA3" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="60" cy="44" r="3" fill="#2E9BC9"/><rect x="53" y="8" width="14" height="6" rx="3" fill="#1F7BA3"/></svg>`,
+
+  mleft:`<svg viewBox="0 0 120 78"><g transform="translate(6,6)">
+    ${BEAKER(6,0,'')} ${BEAKER(66,0,'')}
+    <path d="M11 56.5q10-15 21 0z" fill="#8FA6BC"/>
+    <path d="M74 56.5q6-5 13 0z" fill="#8FA6BC"/>
+    <path d="M2 63h100" stroke="#1E3A5F" stroke-width="2" stroke-linecap="round" opacity=".35"/>
+    </g></svg>`,
+
+  mcolor:`<svg viewBox="0 0 120 78"><g transform="translate(36,4)">
+    ${BEAKER(6,26,'#C9A9E6')}
+    <path d="M21 2c-4 6-6 9-6 12a6 6 0 0 0 12 0c0-3-2-6-6-12z" fill="#B491D6"/></g></svg>`,
+
+  /* --- 미션 용질 --- */
+  cube:`<svg viewBox="0 0 120 78"><g transform="translate(34,10)">
+    <path d="M8 18l22-10 22 10-22 10z" fill="#fff" stroke="#B9CFE0" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M8 18v24l22 10V28z" fill="#EDF3F8" stroke="#B9CFE0" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M52 18v24L30 52V28z" fill="#DDE8F1" stroke="#B9CFE0" stroke-width="2.2" stroke-linejoin="round"/></g></svg>`,
+
+  saltjar:`<svg viewBox="0 0 120 78"><g transform="translate(38,4)">
+    <rect x="6" y="4" width="34" height="10" rx="3" fill="#fff" stroke="#6E8299" stroke-width="2"/>
+    <path d="M8 14h30l-2.6 50a4 4 0 0 1-4 3.7H14.6a4 4 0 0 1-4-3.7z" fill="#EDF1F5" stroke="#8FA6BC" stroke-width="2.2"/>
+    <g fill="#B9C7D6"><rect x="16" y="38" width="5" height="5" rx="1.2"/><rect x="26" y="44" width="4" height="4" rx="1"/>
+    <rect x="20" y="50" width="4" height="4" rx="1"/><rect x="29" y="35" width="4" height="4" rx="1"/></g></g></svg>`,
+
+  teacup:`<svg viewBox="0 0 120 78"><g transform="translate(34,6)">
+    ${BEAKER(6,26,'#D9A05B')}
+    <g fill="#B07A4A"><circle cx="16" cy="48" r="2.2"/><circle cx="24" cy="53" r="1.8"/><circle cx="28" cy="45" r="1.6"/></g>
+    <path d="M27 30L36 6" stroke="#F0806B" stroke-width="3.4" stroke-linecap="round"/></g></svg>`,
+
+  medal:`<svg viewBox="0 0 120 120"><path d="M42 12l18 34 18-34" fill="none" stroke="#2E9BC9" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="60" cy="74" r="34" fill="#FBE7C0" stroke="#E0A93F" stroke-width="5"/>
+    <circle cx="60" cy="74" r="24" fill="#F6B84A"/>
+    <path d="M60 60l4.2 8.6 9.5 1.4-6.9 6.7 1.6 9.4-8.4-4.4-8.4 4.4 1.6-9.4-6.9-6.7 9.5-1.4z" fill="#fff"/></svg>`,
+
+  trophy:`<svg viewBox="0 0 120 120"><path d="M38 20h44v22a22 22 0 0 1-44 0z" fill="#F6B84A" stroke="#D69A2B" stroke-width="4"/>
+    <path d="M38 26H24a14 14 0 0 0 14 16M82 26h14a14 14 0 0 1-14 16" fill="none" stroke="#D69A2B" stroke-width="4"/>
+    <rect x="52" y="62" width="16" height="14" fill="#D69A2B"/>
+    <rect x="40" y="76" width="40" height="10" rx="4" fill="#F6B84A" stroke="#D69A2B" stroke-width="4"/>
+    <path d="M60 30l3 6.5 7 1-5 5 1.2 7-6.2-3.3-6.2 3.3 1.2-7-5-5 7-1z" fill="#fff"/></svg>`,
+};
+
+
+/* ================================================================
+   실험 순서 4컷 — 선생님 스케치 스타일
+   색 규칙: 빨간색=따뜻한 물, 파란색=차가운 물.
+   온도 변인이 아니면 두 컵의 물은 반드시 같은 색(파랑)!
+================================================================ */
+const P_BLUE='#2E9BC9', P_RED='#E2574C', P_INK='#1E3A5F', P_GRAY='#8FA6BC';
+/* 윗면이 열린 비커 실루엣. level: 물높이 선의 y좌표(색선) */
+const OB=(x,color,level,extra='')=>`
+  <path d="M${x} 14 V60 H${x+34} V14" fill="none" stroke="${P_INK}" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  ${level?`<path d="M${x+4} ${level} H${x+30}" stroke="${color}" stroke-width="4.2" stroke-linecap="round"/>`:''}
+  ${extra}`;
+const P_ARROW=cx=>`<path d="M${cx} 1v9M${cx-5.5} 6l5.5 6.5 5.5-6.5" fill="none" stroke="#3FB27F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`;
+const P_LOOP=(cx,cy,n)=>`<path d="M${cx+8.5} ${cy}a8.5 8.5 0 1 1-2.2-5.6" fill="none" stroke="${P_INK}" stroke-width="2.6" stroke-linecap="round"/>
+  <path d="M${cx+4.8} ${cy-7}l1-4.4 3.6 3.3z" fill="${P_INK}"/>
+  <text x="${cx}" y="${cy+4}" font-family="Jua,sans-serif" font-size="11" text-anchor="middle" fill="${P_INK}">${n}</text>`;
+const P_DOTS=(cx,cy,color,n)=>{
+  const pts=[[0,0],[7,4],[-6,5],[3,9],[-3,-4],[9,-2]].slice(0,n);
+  return pts.map(p=>`<circle cx="${cx+p[0]}" cy="${cy+p[1]}" r="2.4" fill="${color}"/>`).join('');
+};
+const P_WRAP=inner=>`<svg viewBox="0 0 132 88" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+
+function procPanels(factor, measure){
+  const L=14, R=84;                       // 두 비커 x 위치
+  const isTemp=(factor==='wtemp');
+  const cA=P_BLUE;                        // 왼쪽 컵 (차가운 물 or 그냥 물)
+  const cB=isTemp?P_RED:P_BLUE;           // 오른쪽 컵 — 온도 변인일 때만 빨강(따뜻한 물)
+  const p=[];
+  /* ① 물 준비 */
+  if(isTemp){
+    p.push({label:'물의 온도만 다르게 준비해요 (파랑=차가운 물, 빨강=따뜻한 물)', svg:P_WRAP(
+      OB(L,cA,32)+OB(R,cB,32)
+      +`<path d="M${L+17} 3v8M${L+13} 5l8 4M${L+21} 5l-8 4" stroke="${P_BLUE}" stroke-width="1.8" stroke-linecap="round"/>`
+      +`<path d="M${R+12} 9c1.4-2.4 0-3.8 1.4-6.5M${R+18} 9c1.4-2.4 0-3.8 1.4-6.5M${R+24} 9c1.4-2.4 0-3.8 1.4-6.5" stroke="${P_RED}" stroke-width="2" stroke-linecap="round" fill="none"/>`)});
+  }else if(factor==='wamount'){
+    p.push({label:'물의 양만 다르게 준비해요', svg:P_WRAP(OB(L,cA,26)+OB(R,cB,44))});
+  }else{
+    p.push({label:'똑같은 물을 두 컵 준비해요', svg:P_WRAP(OB(L,cA,32)+OB(R,cB,32))});
+  }
+  /* ② 동시에 넣기 */
+  const lvl2=(factor==='wamount')?[28,46]:[36,36];
+  if(factor==='grain'){
+    p.push({label:'덩어리와 가루를 동시에 넣어요', svg:P_WRAP(
+      P_ARROW(L+17)+P_ARROW(R+17)
+      +OB(L,cA,lvl2[0],`<rect x="${L+11}" y="44" width="12" height="12" rx="2" fill="none" stroke="${P_INK}" stroke-width="2.4"/>`)
+      +OB(R,cB,lvl2[1],P_DOTS(R+17,49,P_INK,5)))});
+  }else if(factor==='samount'){
+    p.push({label:'넣는 양만 다르게, 동시에!', svg:P_WRAP(
+      P_ARROW(L+17)+P_ARROW(R+17)
+      +OB(L,cA,lvl2[0],P_DOTS(L+17,49,P_INK,2))
+      +OB(R,cB,lvl2[1],P_DOTS(R+17,49,P_INK,6)))});
+  }else{
+    p.push({label:'용질을 똑같이, 동시에 넣어요', svg:P_WRAP(
+      P_ARROW(L+17)+P_ARROW(R+17)
+      +OB(L,cA,lvl2[0],P_DOTS(L+17,lvl2[0]+13,P_INK,3))
+      +OB(R,cB,lvl2[1],P_DOTS(R+17,lvl2[1]+11,P_INK,3)))});
+  }
+  /* ③ 젓기 */
+  const lvl3=(factor==='wamount')?[24,40]:[28,28];
+  if(factor==='stir'){
+    p.push({label:'젓는 횟수만 다르게 해요', svg:P_WRAP(
+      P_LOOP(L+17,11,'1')+P_LOOP(R+17,11,'3')
+      +`<g transform="translate(0,10)">${OB(L,cA,lvl3[0])+OB(R,cB,lvl3[1])}</g>`)});
+  }else{
+    p.push({label:'똑같은 횟수로 저어요', svg:P_WRAP(
+      P_LOOP(L+17,11,'3')+P_LOOP(R+17,11,'3')
+      +`<g transform="translate(0,10)">${OB(L,cA,lvl3[0])+OB(R,cB,lvl3[1])}</g>`)});
+  }
+  /* ④ 비교·측정 — 남은 용질(언덕)은 회색, 비교 원은 물 색을 따라감 */
+  const lvl4=(factor==='wamount')?[26,44]:[30,30];
+  if(measure==='mleft'){
+    p.push({label:'바닥에 남은 양을 비교해요', svg:P_WRAP(
+      `<g transform="translate(0,-6)">${
+        OB(L,cA,lvl4[0],`<path d="M${L+8} 59q9-8 18 0z" fill="${P_GRAY}"/>`)
+        +OB(R,cB,lvl4[1],`<path d="M${R+11} 59q6-4 12 0z" fill="${P_GRAY}"/>`)}</g>`
+      +`<circle cx="${L+17}" cy="76" r="8" fill="none" stroke="${cA}" stroke-width="3"/>`
+      +`<circle cx="${R+17}" cy="76" r="8" fill="none" stroke="${cB}" stroke-width="3"/>`)});
+  }else{
+    p.push({label:'다 녹을 때까지 시간을 재요', svg:P_WRAP(
+      OB(L,cA,32)+OB(R,cB,32)
+      +`<circle cx="66" cy="30" r="13" fill="#fff" stroke="${P_INK}" stroke-width="2.6"/>`
+      +`<path d="M66 30v-8M66 30l6 4" stroke="${P_INK}" stroke-width="2.4" stroke-linecap="round"/>`
+      +`<rect x="62" y="12" width="8" height="4" rx="2" fill="${P_INK}"/>`)});
+  }
+  return p;
+}
+/* 색 안내문 — 온도 변인일 때만 파랑/빨강 의미 설명 */
+function procCaption(factor, factorName){
+  return factor==='wtemp'
+    ? '파란색 물은 차가운 물, 빨간색 물은 따뜻한 물이에요. <b>물의 온도</b>만 다르게, 나머지는 모두 같게!'
+    : `두 컵의 물은 똑같아요. <b>${factorName}</b>만 다르게, 나머지는 모두 같게!`;
+}
+function procHTML(factor, measure, forReport=false){
+  const panels=procPanels(factor, measure);
+  const cls=forReport?'style="display:inline-block;vertical-align:top;width:150px;border:2px solid #CFE0F0;border-radius:12px;padding:8px;margin:4px;text-align:center;background:#fff"':'class="pstep"';
+  return panels.map((p,i)=>`<div ${cls}>
+    <div class="pn"${forReport?' style="width:22px;height:22px;line-height:20px;border:2px solid #1E3A5F;border-radius:50%;margin:0 auto 4px;font-weight:800;font-size:13px"':''}>${i+1}</div>
+    ${p.svg}
+    <div class="pl"${forReport?' style="font-size:12px;font-weight:700;color:#1E3A5F;line-height:1.4"':''}>${p.label}</div>
+  </div>`).join('');
+}
+
+/* ================================================================
+   DATA
+================================================================ */
+const FACTORS = {
+  wamount:{name:'물의 양',            icon:'wamount', sameWhy:'물의 양이 다르면 공평하지 않아요.'},
+  wtemp:  {name:'물의 온도',          icon:'wtemp',   sameWhy:'따뜻한 물은 더 잘 녹여요. 온도는 같게!'},
+  samount:{name:'용질의 양',          icon:'samount', sameWhy:'넣는 양이 다르면 비교할 수 없어요.'},
+  grain:  {name:'용질의 알갱이 크기', icon:'grain',   sameWhy:'알갱이가 작으면 더 잘 녹아요. 같게!'},
+  stype:  {name:'용질의 종류',        icon:'stype',   sameWhy:'이번 미션의 용질만 사용해요. 종류는 같게!'},
+  stir:   {name:'젓는 횟수',          icon:'stir',    sameWhy:'많이 저으면 더 잘 녹아요. 같게!'},
+  ptime:  {name:'넣는 시간',          icon:'ptime',   sameWhy:'동시에 넣어야 공평해요!'},
+};
+const FACTOR_IDS = Object.keys(FACTORS);
+/* 받침에 따라 이/가 자동 선택 */
+const iga=w=>((w.charCodeAt(w.length-1)-0xAC00)%28)?w+'이':w+'가';
+
+const MEASURES = {
+  mtime:{name:'다 녹는 데 걸린 시간', icon:'mtime'},
+  mleft:{name:'바닥에 남은 양',       icon:'mleft'},
+  mcolor:{name:'물의 색깔',           icon:'mcolor'},
+};
+
+/* 미션별 탐구문제 세트 — 문제·측정·예상·결과·알게 된 점이 한 벌 */
+const MISSIONS = [
+  {solute:'각설탕', icon:'cube',
+   praise:'첫 번째 미션 성공! 각설탕 박사가 됐어요! 🍬',
+   opts:[
+    {f:'wtemp', q:'물의 온도가 다르면 각설탕이 녹는 빠르기는 어떻게 될까?', measure:'mtime',
+     predict:['따뜻한 물에서 더 빨리 녹을 것이다','차가운 물에서 더 빨리 녹을 것이다'],
+     results:['따뜻한 물에서 더 빨리 녹았다','차가운 물에서 더 빨리 녹았다','두 컵이 비슷했다'],
+     learned:['물의 온도가 높을수록 각설탕이 빨리 녹는다','물의 온도가 낮을수록 각설탕이 빨리 녹는다','물의 온도는 녹는 빠르기에 영향을 주지 않는다']},
+    {f:'stir', q:'젓는 횟수가 다르면 각설탕이 녹는 빠르기는 어떻게 될까?', measure:'mtime',
+     predict:['많이 저을 때 더 빨리 녹을 것이다','조금 저을 때 더 빨리 녹을 것이다'],
+     results:['많이 저은 컵에서 더 빨리 녹았다','조금 저은 컵에서 더 빨리 녹았다','두 컵이 비슷했다'],
+     learned:['많이 저을수록 각설탕이 빨리 녹는다','조금 저을수록 각설탕이 빨리 녹는다','젓는 횟수는 녹는 빠르기에 영향을 주지 않는다']},
+    {f:'grain', q:'알갱이 크기가 다르면 각설탕이 녹는 빠르기는 어떻게 될까?', measure:'mtime',
+     predict:['작은 알갱이(가루)가 더 빨리 녹을 것이다','큰 덩어리가 더 빨리 녹을 것이다'],
+     results:['가루 설탕이 더 빨리 녹았다','각설탕 덩어리가 더 빨리 녹았다','두 컵이 비슷했다'],
+     learned:['알갱이가 작을수록 빨리 녹는다','알갱이가 클수록 빨리 녹는다','알갱이 크기는 녹는 빠르기에 영향을 주지 않는다']},
+   ]},
+  {solute:'소금', icon:'saltjar',
+   praise:'두 번째 미션 성공! 소금 실험 설계 최고예요! 🧂',
+   opts:[
+    {f:'wamount', q:'물의 양이 다르면 녹는 소금의 양은 어떻게 될까?', measure:'mleft',
+     predict:['물이 많을 때 소금이 더 많이 녹을 것이다','물이 적을 때 소금이 더 많이 녹을 것이다'],
+     results:['물이 많은 컵에서 소금이 더 많이 녹았다 (바닥에 덜 남았다)','물이 적은 컵에서 소금이 더 많이 녹았다','두 컵이 비슷했다'],
+     learned:['물의 양이 많을수록 녹는 소금의 양이 많아진다','물의 양이 적을수록 녹는 소금의 양이 많아진다','물의 양은 녹는 소금의 양에 영향을 주지 않는다']},
+    {f:'wtemp', q:'물의 온도가 다르면 녹는 소금의 양은 어떻게 될까?', measure:'mleft',
+     predict:['따뜻한 물에서 소금이 더 많이 녹을 것이다','차가운 물에서 소금이 더 많이 녹을 것이다'],
+     results:['따뜻한 물에서 소금이 더 많이 녹았다 (바닥에 덜 남았다)','차가운 물에서 소금이 더 많이 녹았다','두 컵이 비슷했다'],
+     learned:['물의 온도가 높을수록 녹는 소금의 양이 많아진다','물의 온도가 낮을수록 녹는 소금의 양이 많아진다','물의 온도는 녹는 소금의 양에 영향을 주지 않는다']},
+    {f:'samount', q:'넣는 소금의 양이 다르면 같은 조건에서 녹는 소금의 양은 어떻게 될까?', measure:'mleft',
+     predict:['조금 넣으면 남김없이 다 녹을 것이다','많이 넣어도 남김없이 다 녹을 것이다'],
+     results:['많이 넣은 컵은 바닥에 소금이 남았다','두 컵 모두 남김없이 다 녹았다','조금 넣은 컵에도 소금이 남았다'],
+     learned:['일정한 양의 물에 녹을 수 있는 소금의 양은 정해져 있다','소금은 아무리 많이 넣어도 다 녹는다','넣는 양이 적을수록 소금이 덜 녹는다']},
+   ]},
+  {solute:'가루 아이스티', icon:'teacup',
+   praise:'세 번째 미션까지 성공! 진짜 꼬마 과학자예요! 🏆',
+   opts:[
+    {f:'wtemp', q:'물의 온도가 다르면 가루 아이스티가 녹는 빠르기는 어떻게 될까?', measure:'mtime',
+     predict:['따뜻한 물에서 더 빨리 녹을 것이다','차가운 물에서 더 빨리 녹을 것이다'],
+     results:['따뜻한 물에서 더 빨리 녹았다','차가운 물에서 더 빨리 녹았다','두 컵이 비슷했다'],
+     learned:['물의 온도가 높을수록 가루 아이스티가 빨리 녹는다','물의 온도가 낮을수록 빨리 녹는다','물의 온도는 녹는 빠르기에 영향을 주지 않는다']},
+    {f:'wamount', q:'물의 양이 다르면 녹는 가루 아이스티의 양은 어떻게 될까?', measure:'mleft',
+     predict:['물이 많을 때 더 많이 녹을 것이다','물이 적을 때 더 많이 녹을 것이다'],
+     results:['물이 많은 컵에서 더 많이 녹았다 (바닥에 덜 남았다)','물이 적은 컵에서 더 많이 녹았다','두 컵이 비슷했다'],
+     learned:['물의 양이 많을수록 녹는 가루 아이스티의 양이 많아진다','물의 양이 적을수록 많이 녹는다','물의 양은 녹는 양에 영향을 주지 않는다']},
+    {f:'stir', q:'젓는 횟수가 다르면 가루 아이스티가 녹는 빠르기는 어떻게 될까?', measure:'mtime',
+     predict:['많이 저을 때 더 빨리 녹을 것이다','조금 저을 때 더 빨리 녹을 것이다'],
+     results:['많이 저은 컵에서 더 빨리 녹았다','조금 저은 컵에서 더 빨리 녹았다','두 컵이 비슷했다'],
+     learned:['많이 저을수록 가루 아이스티가 빨리 녹는다','조금 저을수록 빨리 녹는다','젓는 횟수는 녹는 빠르기에 영향을 주지 않는다']},
+   ]},
+];
+const STEPNAMES=['','탐구 문제','조건 나누기','측정할 것','예상하기','기록하기','완성!'];
+
+/* ================================================================
+   STATE
+================================================================ */
+const S = {
+  view:'start',      // start | mission | grand
+  mission:0, step:1,
+  grade:'', cls:'', name:'',
+  oi:null,           // 선택한 탐구문제 옵션 index
+  sort:{}, measure:null, predict:null,
+  result:'', learned:'',
+  done:[null,null,null],
+};
+const opt=()=>S.oi==null?null:MISSIONS[S.mission].opts[S.oi];
+
+/* ================================================================
+   HELPERS
+================================================================ */
+const $=s=>document.querySelector(s);
+const screen=$('#screen'), footer=$('#footer');
+$('#logo-ic').innerHTML=ICON.flask;
+function toast(msg,type=''){const t=$('#toast');t.className='toast '+type;t.innerHTML=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);}
+const solName=()=>MISSIONS[S.mission].solute;
+
+function renderDots(){
+  const d=$('#dots'); d.innerHTML='';
+  if(S.view!=='mission'){$('#steplabel').textContent='';return;}
+  for(let i=1;i<=6;i++){
+    const el=document.createElement('div');
+    el.className='dot'+(S.step>i?' done':S.step===i?' active':'');
+    d.appendChild(el);
+  }
+  $('#steplabel').textContent=`미션${S.mission+1} · ${STEPNAMES[S.step]}`;
+}
+
+/* ---- Notebook ---- */
+function updateNote(){
+  const st=$('#nb-student');
+  if(S.name){st.classList.add('show');
+    st.textContent=`👧 ${S.grade||'-'}학년 ${S.cls||'-'}반 ${S.name}`;}
+  const bwrap=$('#nb-badges');bwrap.innerHTML='';
+  MISSIONS.forEach((m,i)=>{
+    const b=document.createElement('div');
+    b.className='mb'+(S.done[i]?' ok':(S.view==='mission'&&S.mission===i?' now':''));
+    b.textContent=(S.done[i]?'⭐ ':'')+`미션${i+1}`;
+    bwrap.appendChild(b);
+  });
+  const on=(id,v)=>$('#nr-'+id).classList.toggle('on',v);
+  const set=(id,html)=>{const e=$('#nv-'+id);e.className='nval';e.innerHTML=html;on(id,true);};
+  const clr=(id)=>{const e=$('#nv-'+id);e.className='nval empty';e.textContent='아직 정하지 않았어요';on(id,false);};
+  const ALL=['q','diff','same','measure','predict','result','learned'];
+  if(S.view!=='mission'){ALL.forEach(clr);return;}
+  const o=opt();
+  o?set('q',`<b class="hl">${o.q}</b>`):clr('q');
+  const diffs=FACTOR_IDS.filter(f=>S.sort[f]==='diff'), sames=FACTOR_IDS.filter(f=>S.sort[f]==='same');
+  diffs.length?set('diff',diffs.map(f=>`<span class="tagline d">${FACTORS[f].name}</span>`).join('')):clr('diff');
+  sames.length?set('same',sames.map(f=>`<span class="tagline">${FACTORS[f].name}</span>`).join('')):clr('same');
+  S.measure?set('measure',`<b class="hl">${MEASURES[S.measure].name}</b>`):clr('measure');
+  (o&&S.predict!==null)?set('predict',o.predict[S.predict]):clr('predict');
+  S.result?set('result',S.result):clr('result');
+  S.learned?set('learned',S.learned):clr('learned');
+}
+
+/* ================================================================
+   SCREENS
+================================================================ */
+function render(){
+  renderDots(); updateNote();
+  if(S.view==='start')return scrStart();
+  if(S.view==='grand')return scrGrand();
+  [null,stepQuestion,stepConditions,stepMeasure,stepPredict,stepRecord,stepFinish][S.step]();
+}
+
+/* ---- 시작: 학년/반/이름 ---- */
+function scrStart(){
+  screen.innerHTML=`<div class="center">
+    <div class="bigflask">${ICON.flask}</div>
+    <h1 class="jua">어떻게 하면 잘 녹지?</h1>
+    <p>어떤 물질이 물에 녹을 때 영향을 주는 요인은 무엇일까요?<br>진짜 과학자처럼 실험을 해볼까요?</p>
+    <div class="startform">
+      <div class="field"><label>학년</label>
+        <select id="in-grade"><option value="">선택</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+      <div class="field"><label>반</label><input id="in-cls" type="text" inputmode="numeric" maxlength="2" placeholder="반"></div>
+      <div class="field name"><label>이름</label><input id="in-name" type="text" maxlength="10" placeholder="이름을 써요"></div>
+    </div>
+    <p style="font-size:14px">📒 미션은 모두 3개! <b>각설탕 → 소금 → 가루 아이스티</b></p>
+  </div>`;
+  const refresh=()=>{
+    S.grade=$('#in-grade').value; S.cls=$('#in-cls').value.trim(); S.name=$('#in-name').value.trim();
+    $('#btn-start').disabled=!S.name; updateNote();
+  };
+  footer.innerHTML=`<span class="hint">이름을 쓰면 시작할 수 있어요 🙂</span><div class="spacer"></div>
+    <button class="btn btn-primary" id="btn-start" disabled>미션 1 시작! ▶</button>`;
+  ['in-grade','in-cls','in-name'].forEach(id=>$('#'+id).addEventListener('input',refresh));
+  $('#btn-start').onclick=()=>{if(!S.name)return;startMission(0);};
+  if(S.grade)$('#in-grade').value=S.grade; if(S.cls)$('#in-cls').value=S.cls; if(S.name)$('#in-name').value=S.name;
+  refresh();
+}
+
+function startMission(i){
+  S.view='mission';S.mission=i;S.step=1;
+  S.oi=null;S.sort={};S.measure=null;S.predict=null;S.result='';S.learned='';
+  render();screen.scrollTop=0;
+}
+
+/* ---- 1. 탐구 문제 고르기 ---- */
+function stepQuestion(){
+  const M=MISSIONS[S.mission];
+  screen.innerHTML=`
+    <span class="eyebrow"><span class="n">미션${S.mission+1}</span>${M.solute}의 용해에 영향을 주는 요인</span>
+    <h1 class="q">탐구 문제를 <span class="hl">하나</span> 골라요</h1>
+    <p class="sub"><b>${iga(M.solute)}</b> 물에 녹을 때, 무엇이 영향을 주는지 알아볼 거예요.<br>가장 궁금한 탐구 문제를 골라 보세요.</p>
+    <div class="cards" id="qcards" style="align-items:stretch"></div>`;
+  const wrap=$('#qcards');
+  M.opts.forEach((o,idx)=>{
+    const F=FACTORS[o.f];
+    const c=document.createElement('div');c.className='choice qopt';
+    c.innerHTML=`${ICON[F.icon]}<div class="cap">${o.q}</div>`;
+    c.onclick=()=>{
+      [...wrap.children].forEach(x=>x.classList.remove('sel','go'));
+      c.classList.add('sel','go');
+      S.oi=idx; S.sort={}; S.measure=null; S.predict=null; S.result=''; S.learned='';
+      updateNote();
+      toast('좋은 탐구 문제예요! 이제 조건을 나눠 봐요 👍','good');
+      footer.innerHTML=`<div class="spacer"></div>
+        <button class="btn btn-ghost" onclick="goStart()">◀ 처음으로</button>
+        <button class="btn btn-go" onclick="go(2)">조건 나누러 가기 ▶</button>`;
+    };
+    wrap.appendChild(c);
+  });
+  footer.innerHTML=`<div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="goStart()">◀ 처음으로</button>
+    <button class="btn btn-primary" disabled>다음 ▶</button>`;
+}
+
+/* ---- 2. 조건 나누기 — 다르게 할 것은 학생이 스스로 찾는다! ---- */
+function stepConditions(){
+  const o=opt();
+  screen.innerHTML=`
+    <span class="eyebrow"><span class="n">미션${S.mission+1}</span>조건 나누기</span>
+    <h1 class="q">무엇을 <span class="hl-coral">다르게</span> 하고, 무엇을 <span class="hl-go">같게</span> 할까요?</h1>
+    <p class="sub">우리의 탐구 문제: <b>"${o.q}"</b><br>
+      문제를 잘 읽고 <b class="hl-coral">다르게 할 것</b>을 스스로 찾아 봐요. 딱 하나예요! 나머지는 모두 <b class="hl-go">같게 할 것</b>.</p>
+    <div class="sortwrap">
+      <div class="pool" id="pool"></div>
+      <div class="bins">
+        <div class="bin diff"><h3>🔧 다르게 할 것</h3><div class="desc">알아보고 싶은 것 · 딱 1개</div>
+          <div class="slotrow" id="slot-diff"></div></div>
+        <div class="bin same"><h3>✅ 같게 할 것</h3><div class="desc">공평하게! 나머지 전부</div>
+          <div class="slotrow" id="slot-same"></div></div>
+      </div>
+    </div>`;
+  drawSort();refreshSortFooter();
+}
+function drawSort(){
+  const pool=$('#pool'), sSame=$('#slot-same'), sDiff=$('#slot-diff');
+  pool.innerHTML='';sSame.innerHTML='';sDiff.innerHTML='';
+  FACTOR_IDS.forEach(fid=>{
+    const F=FACTORS[fid], place=S.sort[fid];
+    if(!place){
+      const chip=document.createElement('div');chip.className='chip';
+      chip.innerHTML=`${ICON[F.icon]}<div class="t">${F.name}</div>`;
+      chip.onclick=()=>openAssign(fid);
+      pool.appendChild(chip);
+    }else{
+      const tag=document.createElement('div');
+      tag.className='placed '+(place==='same'?'same':'diff');
+      tag.innerHTML=F.name+'<span class="x">✕</span>';
+      tag.onclick=()=>{delete S.sort[fid];drawSort();refreshSortFooter();updateNote();};
+      (place==='same'?sSame:sDiff).appendChild(tag);
+    }
+  });
+}
+let _pending=null;
+function openAssign(fid){
+  _pending=fid;
+  footer.innerHTML=`<span class="hint jua" style="font-size:17px">"${FACTORS[fid].name}" 은(는) 어디로?</span>
+    <div class="spacer"></div>
+    <button class="btn" style="background:var(--coral);color:#fff;box-shadow:0 5px 0 var(--coral-d)" onclick="assign('diff')">🔧 다르게 할 것</button>
+    <button class="btn btn-go" onclick="assign('same')">✅ 같게 할 것</button>`;
+}
+function assign(where){
+  const fid=_pending;if(!fid)return;_pending=null;
+  const F=FACTORS[fid];
+  const answer=(fid===opt().f)?'diff':'same';
+  S.sort[fid]=where;
+  drawSort();updateNote();
+  if(where===answer){
+    toast('딱 맞아요! '+(answer==='diff'?'탐구 문제에서 바꾸기로 한 것이에요. 그래서 다르게!':F.sameWhy),'good');
+  }else{
+    toast('음~ '+(answer==='same'?F.sameWhy:'탐구 문제를 다시 읽어 봐요. 우리가 알아보고 싶은 것이에요!'),'oops');
+  }
+  refreshSortFooter();
+}
+function refreshSortFooter(){
+  const total=FACTOR_IDS.length, done=Object.keys(S.sort).length;
+  const allCorrect=FACTOR_IDS.every(f=>S.sort[f]===((f===opt().f)?'diff':'same'));
+  if(done<total){
+    footer.innerHTML=`<span class="hint">${done} / ${total} 개 나눴어요</span><div class="spacer"></div>
+      <button class="btn btn-ghost" onclick="go(1)">◀ 뒤로</button>
+      <button class="btn btn-primary" disabled>다음 ▶</button>`;return;
+  }
+  if(!allCorrect){
+    footer.innerHTML=`<span class="hint" style="color:var(--coral-d);font-weight:800">
+      다르게 할 것은 딱 하나! 탐구 문제를 다시 읽고 살펴볼까요?</span><div class="spacer"></div>
+      <button class="btn btn-ghost" onclick="resetSort()">↺ 다시하기</button>
+      <button class="btn btn-primary" disabled>다음 ▶</button>`;return;
+  }
+  footer.innerHTML=`<span class="hint" style="color:var(--go-d);font-weight:800">완벽해요! 공평한 실험이 됐어요 🎉</span>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="go(1)">◀ 뒤로</button>
+    <button class="btn btn-go" onclick="go(3)">다음 ▶</button>`;
+}
+function resetSort(){S.sort={};drawSort();refreshSortFooter();updateNote();}
+
+/* ---- 3. 측정할 것 ---- */
+function stepMeasure(){
+  const o=opt(), correct=o.measure, isSpeed=(correct==='mtime');
+  screen.innerHTML=`
+    <span class="eyebrow"><span class="n">미션${S.mission+1}</span>측정할 것 정하기</span>
+    <h1 class="q">무엇을 <span class="hl">재면</span> 알 수 있을까요?</h1>
+    <p class="sub">우리의 탐구 문제: <b>"${o.q}"</b></p>
+    <div class="cards" id="mcards"></div>`;
+  const wrap=$('#mcards');
+  ['mtime','mleft','mcolor'].forEach(mid=>{
+    const m=MEASURES[mid];
+    const c=document.createElement('div');c.className='choice';
+    c.innerHTML=`${ICON[m.icon]}<div class="cap">${m.name}</div>`;
+    c.onclick=()=>{
+      [...wrap.children].forEach(x=>x.classList.remove('sel','go'));
+      c.classList.add('sel');
+      if(mid===correct){
+        c.classList.add('go');S.measure=mid;updateNote();
+        toast(isSpeed?'정확해요! 빠르기는 시간을 재면 알 수 있어요 ⏱️':'정확해요! 남은 양을 비교하면 알 수 있어요 📏','good');
+        footer.innerHTML=`<div class="spacer"></div>
+          <button class="btn btn-ghost" onclick="go(2)">◀ 뒤로</button>
+          <button class="btn btn-go" onclick="go(4)">다음 ▶</button>`;
+      }else{
+        S.measure=null;updateNote();
+        toast(mid==='mcolor'?'물의 색깔로는 알 수 없어요! 다시 골라봐요':'그것도 잴 수 있지만, 우리 문제에는 '+iga(MEASURES[correct].name)+' 딱이에요!','oops');
+        footer.innerHTML=`<div class="spacer"></div>
+          <button class="btn btn-ghost" onclick="go(2)">◀ 뒤로</button>
+          <button class="btn btn-primary" disabled>다음 ▶</button>`;
+      }
+    };
+    wrap.appendChild(c);
+  });
+  footer.innerHTML=`<div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="go(2)">◀ 뒤로</button>
+    <button class="btn btn-primary" disabled>다음 ▶</button>`;
+}
+
+/* ---- 4. 예상하기 ---- */
+function stepPredict(){
+  const o=opt();
+  screen.innerHTML=`
+    <span class="eyebrow"><span class="n">미션${S.mission+1}</span>결과 예상하기</span>
+    <h1 class="q">결과가 <span class="hl">어떻게 될지</span> 예상해 봐요</h1>
+    <p class="sub">정답은 없어요! 내 생각을 골라요. 실험으로 확인할 거예요.</p>
+    <div class="cards" id="pcards" style="align-items:stretch"></div>`;
+  const wrap=$('#pcards');
+  o.predict.forEach((t,i)=>{
+    const c=document.createElement('div');c.className='choice qopt';
+    c.innerHTML=`${ICON[FACTORS[o.f].icon]}<div class="cap">${t}</div>`;
+    c.onclick=()=>{
+      [...wrap.children].forEach(x=>x.classList.remove('sel'));
+      c.classList.add('sel');S.predict=i;updateNote();
+      toast('예상 완료! 멋진 과학자의 생각이에요 ✍️','good');
+      footer.innerHTML=`<div class="spacer"></div>
+        <button class="btn btn-ghost" onclick="go(3)">◀ 뒤로</button>
+        <button class="btn btn-go" onclick="go(5)">실험하고 기록하기 ▶</button>`;
+    };
+    wrap.appendChild(c);
+  });
+  footer.innerHTML=`<div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="go(3)">◀ 뒤로</button>
+    <button class="btn btn-primary" disabled>다음 ▶</button>`;
+}
+
+/* ---- 5. 기록하기 — 실험 결과 + 알게 된 점 (선택지 또는 직접 쓰기) ---- */
+function stepRecord(){
+  const o=opt();
+  screen.innerHTML=`
+    <span class="eyebrow"><span class="n">미션${S.mission+1}</span>기록하기</span>
+    <h1 class="q">실험한 것을 <span class="hl">기록해요</span></h1>
+    <p class="sub">실험을 마쳤다면 결과와 알게 된 점을 기록해요.<br>알맞은 것을 <b>골라도</b> 되고, <b>직접 써도</b> 좋아요.</p>
+    <div class="recsec">
+      <h3>🧪 실험 결과</h3>
+      <div class="optrow" id="res-opts"></div>
+      <textarea id="res-txt" rows="2" placeholder="직접 쓰고 싶으면 여기에 써요"></textarea>
+    </div>
+    <div class="recsec">
+      <h3>💡 알게 된 점 <small style="font-size:12px;font-weight:600;color:var(--ink-soft)">(탐구 문제와 연결해서)</small></h3>
+      <div class="optrow" id="lea-opts"></div>
+      <textarea id="lea-txt" rows="2" placeholder="직접 쓰고 싶으면 여기에 써요"></textarea>
+    </div>`;
+  function buildOpts(listId,txtId,items,key){
+    const row=$('#'+listId), ta=$('#'+txtId);
+    items.forEach(t=>{
+      const b=document.createElement('button');b.className='optchip';b.textContent=t;
+      b.onclick=()=>{
+        [...row.children].forEach(x=>x.classList.remove('sel'));
+        b.classList.add('sel'); ta.value=t; S[key]=t; updateNote(); refreshRecFooter();
+      };
+      row.appendChild(b);
+    });
+    ta.addEventListener('input',()=>{
+      [...row.children].forEach(x=>x.classList.remove('sel'));
+      S[key]=ta.value.trim(); updateNote(); refreshRecFooter();
+    });
+    if(S[key]){ta.value=S[key];const m=[...row.children].find(x=>x.textContent===S[key]);if(m)m.classList.add('sel');}
+  }
+  buildOpts('res-opts','res-txt',o.results,'result');
+  buildOpts('lea-opts','lea-txt',o.learned,'learned');
+  refreshRecFooter();
+}
+function refreshRecFooter(){
+  const both=!!(S.result&&S.learned);
+  footer.innerHTML=`
+    <button class="btn btn-ghost" onclick="go(4)">◀ 뒤로</button>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="finishMission()">실험 전이에요 · 나중에 기록 ▶</button>
+    <button class="btn ${both?'btn-go':'btn-primary'}" ${both?'onclick="finishMission()"':'disabled'}>기록 완료! ▶</button>`;
+}
+
+/* ---- 6. 완성 + 칭찬 + 보고서 다운로드 ---- */
+function finishMission(){
+  S.done[S.mission]={oi:S.oi, measure:S.measure, predict:S.predict, result:S.result, learned:S.learned};
+  S.step=6;render();screen.scrollTop=0;
+}
+function stepFinish(){
+  const M=MISSIONS[S.mission], o=opt();
+  const sames=FACTOR_IDS.filter(f=>f!==o.f).map(f=>FACTORS[f].name).join(', ');
+  screen.innerHTML=`<div class="center">
+    <div class="medal">${ICON.medal}</div>
+    <div class="praise">🎉 ${S.name} 과학자님, ${M.praise}</div>
+    <div class="summary">
+      <div class="sl">🔎 탐구 문제</div><div class="sv">${o.q}</div>
+      <div class="sl">🔧 다르게 할 것</div><div class="sv">${FACTORS[o.f].name}</div>
+      <div class="sl">✅ 같게 할 것</div><div class="sv">${sames}</div>
+      <div class="sl">📏 측정할 것</div><div class="sv">${MEASURES[S.measure].name}</div>
+      <div class="sl">✍️ 나의 예상</div><div class="sv">${o.predict[S.predict]}</div>
+      ${S.result?`<div class="sl">🧪 실험 결과</div><div class="sv">${S.result}</div>`:''}
+      ${S.learned?`<div class="sl">💡 알게 된 점</div><div class="sv">${S.learned}</div>`:''}
+    </div>
+    <div class="proc-title">🧪 이렇게 실험해요</div>
+    <div class="proc">${procHTML(o.f,S.measure)}</div>
+    <p style="font-size:13.5px;max-width:600px">${procCaption(o.f,FACTORS[o.f].name)}</p>
+  </div>`;
+  const last=(S.mission===MISSIONS.length-1);
+  footer.innerHTML=`
+    <button class="btn btn-dl" onclick="downloadReport(${S.mission})">📄 탐구 보고서 받기</button>
+    <div class="spacer"></div>
+    <button class="btn btn-ghost" onclick="go(5)">◀ 뒤로</button>
+    <button class="btn ${last?'btn-primary':'btn-go'}" onclick="${last?'goGrand()':'startMission('+(S.mission+1)+')'}">
+      ${last?'모든 미션 완료! 🏆':'미션 '+(S.mission+2)+' 도전! ▶'}</button>`;
+}
+
+/* ---- 전체 완료 ---- */
+function goGrand(){S.view='grand';render();screen.scrollTop=0;}
+function scrGrand(){
+  const rows=MISSIONS.map((m,i)=>{
+    const d=S.done[i];if(!d)return '';
+    return `<div class="sl">⭐ 미션${i+1} · ${m.solute}</div>
+      <div class="sv">${m.opts[d.oi].q}</div>`;
+  }).join('');
+  screen.innerHTML=`<div class="center">
+    <div class="medal">${ICON.trophy}</div>
+    <h1 class="jua" style="font-size:38px">모든 미션 완료!</h1>
+    <div class="praise">🏆 ${S.grade||'-'}학년 ${S.cls||'-'}반 ${S.name} 과학자님,<br>
+      세 가지 탐구를 모두 스스로 설계했어요. 정말 대단해요!</div>
+    <div class="summary">${rows}</div>
+  </div>`;
+  footer.innerHTML=`
+    <button class="btn btn-dl" onclick="downloadAll()">📄 보고서 모두 받기</button>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="restart()">처음부터 다시 ↺</button>`;
+}
+function restart(){S.view='start';S.mission=0;S.step=1;S.oi=null;S.sort={};S.measure=null;S.predict=null;
+  S.result='';S.learned='';S.done=[null,null,null];render();}
+
+/* ================================================================
+   REPORT DOWNLOAD
+================================================================ */
+function reportHTML(mi){
+  const d=S.done[mi], M=MISSIONS[mi], o=M.opts[d.oi];
+  const F=FACTORS[o.f];
+  const sames=FACTOR_IDS.filter(f=>f!==o.f).map(f=>FACTORS[f].name).join(', ');
+  const today=new Date();
+  const dateStr=`${today.getFullYear()}년 ${today.getMonth()+1}월 ${today.getDate()}일`;
+  const box=v=>v
+    ?`<div style="border:2px solid #CFE0F0;border-radius:10px;padding:12px;font-size:15px;line-height:1.6;background:#F7FBFF">${v}</div>`
+    :`<div class="writebox"></div>`;
+  return `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
+<title>탐구 보고서 - 미션${mi+1} ${M.solute}</title>
+<style>
+ body{font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:#1E3A5F;max-width:720px;margin:30px auto;padding:0 24px}
+ h1{font-size:26px;border-bottom:4px solid #2E9BC9;padding-bottom:10px}
+ .meta{font-weight:700;margin:14px 0 22px;font-size:15px}
+ .meta span{margin-right:28px;display:inline-block}
+ table{width:100%;border-collapse:collapse;margin-bottom:22px}
+ th,td{border:2px solid #CFE0F0;padding:12px 14px;text-align:left;font-size:15px;line-height:1.6}
+ th{background:#EAF3FB;width:150px;color:#1F7BA3}
+ .writebox{border:2px dashed #8FA6BC;border-radius:10px;min-height:100px;padding:12px;margin-top:6px}
+ .small{font-size:12.5px;color:#4A6480}
+ @media print{body{margin:10mm}}
+</style></head><body>
+<h1>🔬 탐구 보고서 — 미션${mi+1}: ${M.solute}의 용해에 영향을 주는 요인</h1>
+<div class="meta"><span>학년/반: ${S.grade||'　'}학년 ${S.cls||'　'}반</span><span>이름: ${S.name}</span><span>날짜: ${dateStr}</span></div>
+<table>
+ <tr><th>탐구 문제</th><td>${o.q}</td></tr>
+ <tr><th>다르게 할 것</th><td>${F.name}</td></tr>
+ <tr><th>같게 할 것</th><td>${sames}</td></tr>
+ <tr><th>측정할 것</th><td>${MEASURES[d.measure].name}</td></tr>
+ <tr><th>나의 예상</th><td>${o.predict[d.predict]}</td></tr>
+</table>
+<h1 style="font-size:20px">🧪 실험 순서</h1>
+<div style="text-align:center">${procHTML(o.f,d.measure,true)}</div>
+<p class="small" style="text-align:center">${procCaption(o.f,F.name)}</p>
+<h1 style="font-size:20px">✍️ 실험 기록</h1>
+${d.result||d.learned?'':'<p class="small">실험 결과와 알게 된 점을 직접 써 봐요.</p>'}
+<b>실험 결과</b>${box(d.result)}<br>
+<b>알게 된 점 (탐구 문제와 연결해서)</b>${box(d.learned)}
+<p class="small">「어떻게 하면 잘 녹지?」 꼬마 과학자 탐구 설계 앱에서 만든 보고서예요.</p>
+</body></html>`;
+}
+function downloadReport(mi){
+  const blob=new Blob([reportHTML(mi)],{type:'text/html;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`탐구보고서_미션${mi+1}_${MISSIONS[mi].solute}_${S.name||'학생'}.html`;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},600);
+  toast('보고서를 저장했어요! 인쇄해서 함께 봐요 📄','good');
+}
+function downloadAll(){
+  MISSIONS.forEach((m,i)=>{if(S.done[i])setTimeout(()=>downloadReport(i),i*700);});
+}
+
+/* ================================================================
+   NAV
+================================================================ */
+function go(n){S.step=n;render();screen.scrollTop=0;}
+function goStart(){S.view='start';render();}
+
+render();
+</script>
+</body>
+</html>
